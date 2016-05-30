@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+			<title>SDN 域间演示</title>
+			<!-- 引入 echarts.js -->
+	</head>
+	<style type="text/css">
+		h1 {font-size: 300%; text-align:center;}
+		h2 {font-size: 200%; text-align:center;}
+		p {font-size: 100%; text-align:center; }
+		h3 {font-size: 120%;}
+		.button {
+		    background-color: #4CAF50; /* Green */
+		    border: none;
+		    color: white;
+		    padding: 10px 32px;
+		    text-align: center;
+		    text-decoration: none;
+		    display: inline-block;
+		    font-size: 16px;
+		    margin: 4px 2px;
+		    cursor: pointer;
+		}
+
+		.disabled {
+		    opacity: 0.6;
+		    cursor: not-allowed;
+}
+	</style>
+	<body>  
+		<script src="echarts.min.js"></script>
+		<script src="worldsp.js"></script>
+		<script src="jquery-1.12.3.min.js"></script>
+		<div id="outside" style="width:100%;height:660px;margin-left:auto;margin-right:auto;background-color:#404a59">
+			<div style="width:100%;height:20%;">
+				<br>
+				<h1 style="color:white;vertical-align:middle;" align="center" >Demo</h1>
+			</div>
+			<!-- 为Map准备一个具备大小（宽高）的Dom -->
+
+			<div  style="width: 60%;height:80%;float:left">
+				<div id="main" style="width:100%;height:88%;float:top"></div>
+				<div style="width:100%;height:12%;float:bottom">
+				<table align="center">
+					<tr>
+						<td><button class="button">Tsinghua</button></td>
+						<td align="center">&nbsp&nbsp&nbsp&nbsp<button class="button">CSTNET</button>&nbsp&nbsp&nbsp&nbsp</td>
+						<td><button class="button">Internet2</button></td>
+					</tr>
+				</table>
+				</div>
+			</div>
+			<!-- 为ThreeDomain各自准备一个具备大小（宽高）的Dom -->
+			<div style="width: 40%;height:80%;float:right">
+				<div style="width: 100%;height:80%;float:top">
+					<div             style="width: 90%;height:10%;float:bottom;background-color:#fff">
+						<p>实时流量</p>
+					</div>
+					<div id="thui2"  style="width: 90%;height:90%;float:left;background-color:#efefef" ></div>
+				</div>
+				<div             style="width: 70%;height:10%;float:bottom;background-color:#404a59">
+					<div style="width:100%;float:bottom;height:146%">
+						<div style="width:100%;float:top;height:33%"></div>
+						
+						<div style="float:right;height:100%;width=80%;" align="center"><button id="recv"class="button disabled" onclick="$.get('data/normal');" >链路正常</button>
+						&nbsp&nbsp&nbsp&nbsp
+						<button id="lkdn" class="button disabled" onclick="$.get('data/linkdown')">链路断路</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<script>
+			main=echarts.init(document.getElementById('main'));
+			thui2=echarts.init(document.getElementById('thui2'));
+		</script>
+		<script src="display.js"></script>
+		<script src="thui2.js"></script>
+		<script>
+			var tag=-1
+			main.setOption(option);
+			thui2.setOption(optTHUI2)
+			setInterval(function () {
+						timeData.shift();
+				timeData.push((new Date()).toLocaleTimeString().replace(/^\D*/,''));
+				$.ajax({
+					dataType:'json',
+					url:'data/a.json',
+					mimeType:'application/json',
+					success:function(data){
+						thui2.setOption({
+						   xAxis:{
+							   data:timeData
+						   },
+						series: [{
+						    data:data.THUI2 
+						},{
+							data:data.I2CST
+						},{
+							data:data.CSTTHU
+						 }]
+						});
+						if(data.tag == 0){
+						$("#recv").attr("class","button")
+						$("#lkdn").attr("class","button disabled")
+						if(data.tag!=tag){
+							series.splice(serl);
+							addroute(series,rerouteData);
+							main.setOption(option);
+							tag=data.tag;
+						}
+						}else{
+						$("#recv").attr("class","button disabled")
+						$("#lkdn").attr("class","button")
+						if(data.tag!=tag){
+							series.splice(serl);
+							addroute(series,routeData);
+							main.setOption(option);
+							tag=data.tag;
+						}
+						}
+					}
+				});
+			
+			}, 2000);
+		</script>
+	</body>
+</html>
